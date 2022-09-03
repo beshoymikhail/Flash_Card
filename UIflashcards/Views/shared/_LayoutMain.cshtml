@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    <link href="~/lib/toastr.js/toastr.min.css" rel="stylesheet" />
+    <script src="~/lib/toastr.js/toastr.min.js"></script>
+
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-dark ">
+        <div class="container-fluid ">
+            <a class="navbar-brand text-light" asp-area="" asp-controller="Home" asp-action="Index">Flash Card learning</a>
+
+            <div class="collapse navbar-collapse " id="navbarText">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0" dir="rtl">
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#">Home</a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+        <form class="form-inline container-fluid">
+            <input class="form-control my-2 my-sm-0" type="search" placeholder="Search" aria-label="Search" style="margin:1rem;">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+
+            <p class="nav-link text-light my-2 my-sm-0" id="username" > </p>
+            <a class="nav-link text-light my-2 my-sm-0" href="#" onclick="logout()">Log out</a>
+        </form>
+    </nav>
+    <section id="about" style="margin-top:3rem">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-light text-center footer justify-content" style="bottom: 0;position:fixed;width:100%">
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2022 Beshoy Mikhail Copyright:
+            <a class="text-dark" href="https://Beshoy.com/">Beshoy.com</a>
+        </div>
+        <!-- Copyright -->
+    </footer>
+</body>
+</html>
+<script>
+    if (sessionStorage.getItem("username") == null) {
+        alert("You have to log in or register first");
+        window.location = window.location.origin;
+    }
+    $("#username").append("Welcome " + sessionStorage.getItem("username"));
+    function logout() {
+        sessionStorage.removeItem("username");
+        window.location = window.location.origin;
+    }
+    function mainpage() {
+        var con = window.location.href.split('/')
+        window.location = window.location.origin + '/' + con[con.length-2]+'/index'
+    }
+
+</script>

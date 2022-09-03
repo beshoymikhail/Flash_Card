@@ -1,0 +1,110 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/shared/_LayoutMain.cshtml";
+}
+
+
+<a href="/teacher/create" class="btn btn-primary" style="margin-bottom:1rem">Create new</a>
+
+<div class="chapters col-4">
+    <label for="chapters">Choose your Chapter Name</label>
+    <select class="form-select form-control-sm" id="chapters">
+        <option>---select</option>
+    </select>
+</div>
+
+<br />
+
+<table class="table table-hover table-bordered table-striped" id="table">
+    <tr>
+        <th> Question </th>
+        <th> Answer </th>
+        <th> Date </th>
+        <th></th>
+    </tr>
+    
+    @*@foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(ww => item.Name) </td>
+            <td>@Html.DisplayFor(ww => item.Age) </td>
+            <td>@Html.DisplayFor(ww => item.Department.DeptName) </td>
+            <td>
+                <a asp-action="Edit" asp-controller="Employee" asp-route-id="@item.Id" asp-route-name="@item.Name" class="btn btn-success">Edit</a> |
+                <a asp-action="Details" asp-controller="Employee" asp-route-id="@item.Id" asp-route-name="@item.Name" class="btn btn-secondary">Details</a> |
+                <a asp-action="Delete" asp-controller="Employee" asp-route-id="@item.Id" asp-route-name="@item.Name" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+
+    }*@
+</table>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Deleting Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure that you want delete Question
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="delete" onclick="deletef()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var CurrentQuestionID = 0
+    $(document).ready(function () {
+        $("#divshow").hide();
+        $("#form").hide();
+        var sel = $("#chapters");
+        $.ajax({
+            url: "http://localhost:19565/api/Chapters",
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    sel.append('<option value="' + data[i].chapterID + '" >' + data[i].name + '</option>')
+                }
+            }
+        })
+        sel.change(function (event) {
+            $("#table td").remove()
+            var id = $("#chapters option:selected").attr('value');
+            $.ajax({
+                url: "http://localhost:19565/api/FlashCards/Getall?chapterId=" + id,
+
+                success: function (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        var tr = $("<tr/>")
+                        tr.append("<td />" + data[i].question )
+                        tr.append("<td />" + data[i].answer )
+                        tr.append("<td />" + data[i].date )
+                        tr.append('<td/>' + '<a class="btn btn-success" href="/teacher/edit/' + data[i].id + '">Edit </a>' +
+                            '<button class="btn btn-danger" style="margin-left:1rem" data-bs-toggle="modal" data-bs-target="#exampleModal" id="model" onclick="SetID(' + data[i].id +')">Delete </ button > '
+                        )
+                        
+                        $("table tbody").append(tr);
+                    }
+                }
+            });
+        });
+    });
+    function SetID(id) {
+        CurrentQuestionID = id;
+    }
+    function deletef() {
+        $.ajax({
+            type: "Delete",
+            url: "http://localhost:19565/api/FlashCards/" + CurrentQuestionID,
+            success: function (data) {
+                location.reload();
+                $("#exampleModal").modal('hide');
+            }
+        })
+    }
+</script>

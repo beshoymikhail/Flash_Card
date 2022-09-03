@@ -1,0 +1,95 @@
+﻿<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+
+        <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Register</p>
+
+        <form class="mx-1 mx-md-4" id="register">
+            <div class="d-flex flex-row align-items-center mb-4">
+                <div class="form-groub flex-fill mb-0">
+                    <label class="form-label" for="username">User Name</label>
+                    <input type="text" id="username" name="username" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="d-flex flex-row align-items-center mb-4">
+                <div class="form-groub flex-fill mb-0">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required name="Password" />
+
+                </div>
+            </div>
+            <div class="d-flex flex-row align-items-center mb-4">
+                <div class="form-groub flex-fill mb-0">
+                    <label class="form-label" for="cpass">Confirm Password</label>
+                    <input type="password" id="cpass" class="form-control" required name="cpass" />
+                </div>
+            </div>
+
+            <div class="d-flex flex-row align-items-center mb-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="check" />
+                    <label class="form-check-label" for="check">Teacher</label>
+                    <span id="passerror" class="text-danger"></span>
+                </div>
+            </div>
+            @*ERROR**@
+            <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+
+                <p style="color:red;" id="error"></p>
+            </div>
+
+            <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                <button type="submit" class="btn btn-primary btn-lg">Register</button>
+            </div>
+
+            <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+
+                <a href="/Home/login">Login</a>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        $("#register").submit(function (event) {
+            event.preventDefault();
+
+            var pass = $("#password").val()
+            var cpass = $("#cpass").val()
+            if (pass != cpass) {
+                $("#passerror").append("Confirmed Password Not match Password");
+                return false;
+            }
+            else {
+                $("#passerror").empty();
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:19565/api/Users",
+                    data: JSON.stringify({
+                        id: 0,
+                        userName: $("#username").val(),
+                        passsword: $("#password").val(),
+                        teachercheck: $("#check").is(":checked")
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (result) {
+
+                        sessionStorage.setItem("username", $("username").val())
+                        if ($("#check").is(":checked")) {
+                            window.location = "/teacher/index";
+                        }
+                        else {
+                            window.location = "/student/index";
+                        }
+                    },
+                    error: function (msg) {
+                        if (msg.responseText == "Exist")
+                            $("#error").text("User Already " + msg.responseText);
+                        
+                    }
+                });
+            }
+        });
+    </script>
+
+</div>

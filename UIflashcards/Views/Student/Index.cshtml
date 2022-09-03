@@ -1,0 +1,130 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/shared/_LayoutMain.cshtml";
+}
+
+<div class=" row ">
+    <div class="chapters col-6"">
+        <label for="chapters">Choose your Chapter Name</label>
+        <select class="form-select form-select-sm" id="chapters">
+            <option >---select</option>
+        </select>
+    </div>
+</div>
+
+<div class="row" style="margin-bottom:3rem;">
+    <div class="col-5" id="carddiv">
+        
+    </div>
+    <div class="col-6" id="divshow">
+        <br />
+        <h6>Answer Question</h6>
+        <br />
+        <div id="displayq" style="margin-left:3rem">
+            <button style="height:100px;margin-bottom:1rem;" class="btn border-secondary col-8" id="Questionbuuton"> </button>
+        </div>
+        <form class="form-inline" id="form" onsubmit="() => false">
+            <div class="form-group mx-sm-6 mb-2">
+                <input type="text"class="form-control" id="answer" placeholder="Enter Your Answer" required/>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2" id="answerbtn">Answer</button>
+        </form>
+        <div id="resultright" class="d-flex justify-content-center">
+
+        </div>
+        <h6 id="h6wrong" class="d-flex justify-content-center"></h6>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#divshow").hide();
+        $("#form").hide();
+        var sel = $("#chapters");
+        $.ajax({
+            url: "http://localhost:19565/api/Chapters",
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    sel.append('<option value="' + data[i].chapterID + '" >' + data[i].name + '</option>')
+                }
+            }
+        })
+        sel.change(function (event) {
+            
+            $("#carddiv").empty();
+            if (checktoggle) {
+                $("#divshow").toggle();
+                checktoggle = false;
+            }
+            var id = $("#chapters option:selected").attr('value');
+            $.ajax({
+                url: "http://localhost:19565/api/FlashCards/Getall?chapterId=" + id,
+
+                success: function (data) {
+                    console.log(data)
+                    for (var i = 0; i < data.length; i++) {
+                        $("#carddiv").append('<br/>')
+                        $("#carddiv").append('<button style="height:75px;margin-bottom:1rem;"class="col-8 btn btn-secondary" onclick="show('+ data[i].id + ')">' + data[i].question + '</button>')
+                    }
+                }
+            });
+        });
+    });
+    var count = 0
+    var checktoggle = false;
+    var card;
+    function show(idd) {
+        $("#resultright").empty();
+        $("#h6wrong").empty();
+        if (count == 0) {
+            checktoggle = true;
+            $("#divshow").toggle();
+        }
+        if (checktoggle == false) {
+            $("#divshow").toggle();
+            checktoggle = true;
+        }
+        count++;
+        $.ajax({
+            url: "http://localhost:19565/api/FlashCards/" + idd,
+            type: "Get",
+            contentType:"Application/json",
+            success: function (data) {
+                $("#Questionbuuton").empty();
+                $("#Questionbuuton").append(data.question);
+                $("#form").show();
+                card = data;
+            }
+        });
+    }
+    var checkanswer = true;
+    $("#form").submit(function (e) {
+        e.preventDefault();
+        var answ = $("#answer").val();
+        $("#answer").val("");
+        $("#resultright").empty();
+        $("#h6wrong").empty();
+        if (card != null && card.answer.toLowerCase() == answ.toLowerCase()) {
+            $("#Questionbuuton").empty();
+            $("#Questionbuuton").append("Answer = " + card.answer);
+            $("#resultright").append('<h1 class="text-success" style="margin:1.5rem;">Right <img src="/Imgs/Rigth.jpg" style="height:100px;width:100px" /> </h1>')
+        }
+        else {
+            $("#Questionbuuton").empty();
+
+            $("#Questionbuuton").append( card.question);
+            $("#resultright").append('<h1 class="text-danger" style="margin:1.5rem;">Wrong <img src="/Imgs/wrong.jpg" style="height:100px;width:100px" /></h1>')
+            $("#h6wrong").append("If you wanna know the answer click the card!");
+            checkanswer = false;
+        }
+        return false;
+    })
+    $("#Questionbuuton").click(function () {
+        if (checkanswer == false) {
+            $("#Questionbuuton").empty();
+            $("#Questionbuuton").append("Answer = " + card.answer);
+            $("#h6wrong").empty();
+        }
+    })
+</script>

@@ -1,0 +1,122 @@
+﻿
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/shared/_LayoutMain.cshtml";
+}
+
+<h1>Edit new flash Card</h1>
+
+<form asp-action="create" id="editform">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group"><br />
+        <label for="question" class="control-label">Qestion </label>
+        <input asp-for="Question" class="form-control" type="text" required name="Question" id="question" />
+        <span asp-validation-for="Question" class="text-danger" id="questionerror"></span>
+    </div><br />
+    <div class="form-group">
+        <label for="answer" class="control-label">Qestion </label>
+        <input asp-for="Answer" class="form-control" type="text" required name="Answer" id="answer" />
+        <span asp-validation-for="Question" class="text-danger" id="answererror"></span>
+    </div><br />
+    <div class="form-group">
+        <label for="date" class="control-label">Qestion </label>
+        <input asp-for="Date" class="form-control" type="date" required name="Date" id="date" />
+        <span asp-validation-for="Date" class="text-danger" id="dateerror"></span>
+    </div><br />
+    <div class="form-group">
+        <label for="chapters">Choose your Chapter Name</label>
+        <select class="form-select form-control-sm" id="chapters" aria-label=".form-select-sm example">
+            <option>---select</option>
+        </select>
+        <span asp-validation-for="chapters" class="text-danger" ></span>
+    </div><br />
+    <div class="form-group center">
+        <input type="submit" name="save" value="Save" id="save" class="btn btn-primary col-2" style="margin-top:1rem;" />
+    </div>
+
+</form><br />
+<div style="margin-bottom:3rem;">
+    <a href="/teacher/index" style="margin-top:1rem;">Back to list</a>
+</div>
+<script>
+    var id=@ViewData["id"];
+    $(document).ready(function () {
+
+        var sel = $("#chapters");
+        var cid= $("#chapters option:selected").attr('value');
+        $("#chapters option").remove() ;
+        $.ajax({
+            url: "http://localhost:19565/api/Chapters",
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    sel.append('<option value="' + data[i].chapterID + '" >' + data[i].name + '</option>')
+                }
+            }
+        })
+        $.ajax({
+            type: "Get",
+            url: "http://localhost:19565/api/FlashCards/" + id,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                $("#question").val(data.question)
+                $("#answer").val(data.answer)
+                var d = new Date(data.date)
+                var month = (d.getMonth() + 1).toString()
+                if (month.length == 1) {
+                    month = "0" + month;
+                }
+                var da = d.getFullYear() + '-' + month + '-' + d.getDate();
+                $("#date").val(da)
+                $("#chapters").val(data.chapterID)
+            }
+        })
+    })
+    $("#save").click(function () {
+        checkempty = false;
+        $("questionerror").empty();
+        $("answererror").empty();
+        $("dateerror").empty();
+        if ($.trim($("#question").val()) == '') {
+            checkempty = true;
+            $("#questionerror").append("* Question Required");
+        }
+        if ($.trim($("#answer").val()) == '') {
+            checkempty = true;
+            $("#answererror").append("* Answer Required");
+        }
+        if ($.trim($("#date").val()) == '') {
+            checkempty = true;
+            $("#dateerror").append("* Date Required");
+        }
+    })
+    var checkempty = false;
+    $("#editform").submit(function (event) {
+        if (checkempty === true) {
+            return false;
+        }
+        event.preventDefault();
+        
+        var cid = $("#chapters option:selected").attr('value');
+        $.ajax({
+            type: "put",
+            url: "http://localhost:19565/api/FlashCards/" + id,
+            data: JSON.stringify({
+                id: id,
+                question: $("#question").val(),
+                answer: $("#answer").val(),
+                date: $("#date").val(),
+                chapterID: Number(cid)
+            }),
+            contentType:"application/json; charset=utf-8",
+            success: function (data) {
+                toastr.success("Edit", "Edited Successfuly", 1000);
+                setTimeout(function () { window.location="/teacher/index" },500)
+            },
+            error: function (msg) {
+                event.preventDefault();
+                console.log(msg.responseJSON);
+                toastr.alert("Error","We can not add new Question",1000)
+            }
+        })
+    })
+</script>
